@@ -1,4 +1,3 @@
-# src/train/modeling_qr.py
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
@@ -68,7 +67,8 @@ def build_qr_model(
     ctx_dim: int = 7,
 ) -> nn.Module:
     """
-    QR 이미지 분류 모델 빌더.
+    Build a QR classifier with optional context features.
+
     - use_context=True: QRContextNet (image + context features)
     - use_context=False: plain ResNet18 (QRNet)
     """
@@ -79,9 +79,10 @@ def build_qr_model(
 
 def load_model_state(model: nn.Module, ckpt_path: str, device: torch.device) -> Dict[str, Any]:
     """
-    체크포인트 포맷 다양성 흡수:
+    Load a checkpoint while handling common format variants.
+
     - train_*.py: {"model": state_dict, "epoch": ...}
-    - 다른 스크립트/실험: {"state_dict": ...} 혹은 state_dict 단독
+    - other scripts/experiments: {"state_dict": ...} or a raw state_dict
     """
     ckpt = torch.load(ckpt_path, map_location=device)
 
@@ -93,7 +94,6 @@ def load_model_state(model: nn.Module, ckpt_path: str, device: torch.device) -> 
             model.load_state_dict(ckpt["state_dict"])
             return ckpt
 
-        # ckpt 자체가 state_dict인 케이스
         try:
             model.load_state_dict(ckpt)  # type: ignore[arg-type]
             return {"raw": ckpt}
