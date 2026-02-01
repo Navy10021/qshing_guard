@@ -6,7 +6,7 @@ Real‑world augmentation ✦ Multi‑modal fusion ✦ Security‑game co‑evol
 ![domain](https://img.shields.io/badge/domain-QR%20Security%20%2F%20Anti--Phishing-blue)
 ![training](https://img.shields.io/badge/training-security%20game%20coevolution-purple)
 
-> **Mission**: Build an operational pipeline that **detects (WARN) and blocks (BLOCK)** QR‑enabled phishing attacks (“quishing”).  
+> **Mission**: Build an operational pipeline that **detects (WARN) and blocks (BLOCK)** QR‑enabled phishing attacks (“Quishing”).  
 > **Core idea**: Under **decodability constraints** (QR must remain scannable), train for robustness against both **real‑world capture distribution** and **adversarial context attacks**.
 
 ---
