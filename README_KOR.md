@@ -13,7 +13,7 @@ Real‑world 증강 ✦ Fusion detector ✦ Security‑game co‑evolution (Cont
 
 ## TL;DR
 - **Real‑world Data Augmentation**: `QR + Background + Camera/Sharing Effects`로 **현장 촬영본 같은 분포**를 학습
-- **Fusion Detector(핵심)**: QR 이미지 + URL 문자열(TF‑IDF) + URL lexical + (선택) Context feature branch
+- **Fusion Detector**: QR 이미지 + URL 문자열(TF‑IDF) + URL lexical + Context feature branch
 - **Security‑game Co‑evolution**: 공격자(Attacker)가 “가장 잘 속는” 공격을 만들고, 방어자(Detector)는 이를 흡수하며 강해지는 **순환 적대 학습 루프**
 - **운영 설계(Operational)**: FPR 기반 `WARN/BLOCK` 임계값 + calibration + 시각화 리포트(ROC/PR/CM/Calibration/ECE)
 
