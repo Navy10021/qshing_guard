@@ -1,0 +1,20 @@
+# qshing_guard requirements
+# NOTE: PyTorch wheels depend on your CUDA/CPU environment.
+# If you need a specific CUDA build, install torch/torchvision from the official PyTorch index URL.
+torch>=2.0
+torchvision>=0.15
+
+numpy>=1.23
+pandas>=1.5
+scikit-learn>=1.2
+joblib>=1.2
+tqdm>=4.64
+matplotlib>=3.7
+
+# QR generation / image IO
+Pillow>=9.5
+qrcode[pil]>=7.4
+opencv-python-headless>=4.8
+
+# QR decoding (requires system zbar; on Ubuntu: sudo apt-get install -y libzbar0)
+pyzbar>=0.1.9
