@@ -13,7 +13,7 @@ Real‑world augmentation ✦ Multi‑modal fusion ✦ Security‑game co‑evol
 
 ## TL;DR
 - **Real‑world Data Augmentation**: simulate “in‑the‑wild” QR captures with `QR + Background + Camera/Sharing Effects`
-- **Fusion Detector (key)**: QR image + URL text (TF‑IDF) + URL lexical features + optional context feature branch
+- **Fusion Detector**: QR image + URL text (TF‑IDF) + URL lexical features + optional context feature branch
 - **Security‑game Co‑evolution**: attacker generates what the detector fails on; the detector absorbs current + past attacks via replay
 - **Operationalization**: FPR‑based `WARN/BLOCK` thresholds + calibration + reports (ROC/PR/CM/Calibration/ECE)
 
