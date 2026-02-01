@@ -1,4 +1,3 @@
-# qshing_guard/src/data/build_manifest.py
 from __future__ import annotations
 
 import argparse
@@ -12,7 +11,7 @@ from sklearn.model_selection import train_test_split
 
 from .utils import extract_urls, normalize_url, registrable_domain
 
-# ✅ tqdm optional
+# tqdm optional
 try:
     from tqdm.auto import tqdm  # type: ignore
     _HAS_TQDM = True
@@ -45,7 +44,7 @@ def _progress_map(series: pd.Series, fn, desc: str) -> pd.Series:
 
 
 def _detect_kisa_url_col(df: pd.DataFrame) -> str:
-    # Expected columns often include: 날짜, 홈페이지주소
+    # Expected columns often include localized headers (e.g., date, homepage).
     for c in df.columns:
         cl = str(c).lower()
         if "홈페이지" in str(c) or cl in ("url", "homepage", "site") or "url" in cl:

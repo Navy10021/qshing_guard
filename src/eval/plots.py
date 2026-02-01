@@ -1,4 +1,3 @@
-# src/eval/plots.py
 from __future__ import annotations
 
 from pathlib import Path
@@ -87,5 +86,5 @@ def save_calibration_curve(y_true: np.ndarray, y_prob: np.ndarray, out_path: str
 
 
 def save_operating_points_curve(y_true: np.ndarray, y_prob: np.ndarray, out_path: str) -> None:
-    """TPR vs FPR curve (same as ROC, but kept for '운영지표 곡선' naming)."""
+    """TPR vs FPR curve (same as ROC, kept for legacy naming)."""
     save_roc(y_true, y_prob, out_path)
