@@ -194,6 +194,9 @@ flowchart TD
 ---
 
 ## 6) Quickstart
+> 💡 CLI 실행이 익숙하지 않다면  
+> `notebooks/notebooks_guide`의 Jupyter Notebook을 참고하며 단계별로 따라가도 좋습니다.
+
 ### Requirements
 - Python 3.10+ 권장
 - (선택) CUDA 환경에서 학습 가속 가능
