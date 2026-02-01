@@ -193,6 +193,9 @@ flowchart TD
 ---
 
 ## 6) Quickstart
+> 💡 Prefer an interactive walkthrough?  
+> You can also follow the step-by-step Jupyter notebooks in `notebooks/notebooks_guide` alongside this Quickstart.
+
 ### Requirements
 - Python 3.10+ recommended
 - (Optional) CUDA for faster training
