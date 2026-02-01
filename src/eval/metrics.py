@@ -1,4 +1,3 @@
-# src/eval/metrics.py
 from __future__ import annotations
 
 import json
@@ -28,7 +27,7 @@ except Exception:
 def threshold_at_fpr(y_true: np.ndarray, y_score: np.ndarray, target_fpr: float) -> float:
     """
     Return threshold such that FPR <= target_fpr (best-effort).
-    train_url.py가 요구하는 함수명.
+    Named to match the API expected by train_url.py.
     """
     y_true = np.asarray(y_true).astype(int)
     y_score = np.asarray(y_score).astype(float)
@@ -45,7 +44,7 @@ def threshold_at_fpr(y_true: np.ndarray, y_score: np.ndarray, target_fpr: float)
 
 
 def find_threshold_at_fpr(y_true: np.ndarray, y_score: np.ndarray, target_fpr: float) -> float:
-    """이전 이름 호환용."""
+    """Backward-compatible alias for threshold_at_fpr."""
     return threshold_at_fpr(y_true, y_score, target_fpr)
 
 
@@ -85,7 +84,7 @@ def ece_score(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 15) -> float
 
 def summarize_binary(y_true: np.ndarray, y_prob: np.ndarray, thr: float) -> Dict[str, Any]:
     """
-    threshold 기반으로 confusion/precision/recall/f1/fpr/tpr 요약.
+    Summarize confusion/precision/recall/f1/fpr/tpr at a threshold.
     """
     y_true = np.asarray(y_true).astype(int)
     y_prob = np.asarray(y_prob).astype(float)
@@ -124,7 +123,7 @@ def summarize_binary(y_true: np.ndarray, y_prob: np.ndarray, thr: float) -> Dict
 
 def global_scores(y_true: np.ndarray, y_prob: np.ndarray) -> Dict[str, Any]:
     """
-    ROC-AUC, PR-AUC 등 전역 점수.
+    Compute global scores such as ROC-AUC and PR-AUC.
     """
     y_true = np.asarray(y_true).astype(int)
     y_prob = np.asarray(y_prob).astype(float)
@@ -140,13 +139,13 @@ def global_scores(y_true: np.ndarray, y_prob: np.ndarray) -> Dict[str, Any]:
 
 
 # ----------------------------
-# ✅ train_url.py 호환 API
+# train_url.py-compatible API.
 # ----------------------------
 def binary_report(y_true: np.ndarray, y_pred: np.ndarray, y_prob: Optional[np.ndarray] = None) -> Dict[str, Any]:
     """
-    train_url.py에서 쓰는 형태로 제공.
-    - y_pred: 0/1 예측
-    - y_prob: 확률(있으면 auc/ece 등 추가)
+    Provide the report shape expected by train_url.py.
+    - y_pred: 0/1 predictions
+    - y_prob: probabilities (optional, for auc/ece)
     """
     y_true = np.asarray(y_true).astype(int)
     y_pred = np.asarray(y_pred).astype(int)
@@ -188,7 +187,7 @@ def binary_report(y_true: np.ndarray, y_pred: np.ndarray, y_prob: Optional[np.nd
 
 def save_report(path: str, report: Dict[str, Any], extra: Optional[Dict[str, Any]] = None) -> None:
     """
-    train_url.py에서 쓰는 JSON 저장 함수.
+    Save a JSON report in the format used by train_url.py.
     """
     out = dict(report)
     if extra:

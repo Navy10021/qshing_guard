@@ -15,7 +15,7 @@ from ..qr.augmentations import AugmentConfig, augment_qr_realistic
 from ..features.url_lexical import batch_extract_url_features
 
 # -----------------------------
-# I/O + tensor helpers
+# I/O and tensor helpers.
 # -----------------------------
 def _read_image_bgr(path: str) -> np.ndarray:
     img = cv2.imread(path, cv2.IMREAD_COLOR)
@@ -25,16 +25,14 @@ def _read_image_bgr(path: str) -> np.ndarray:
 
 
 def _to_chw_float(img_bgr: np.ndarray, size: int = 224) -> torch.Tensor:
-    # resize
     img = cv2.resize(img_bgr, (size, size), interpolation=cv2.INTER_AREA)
-    # BGR->RGB
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     x = torch.from_numpy(img).permute(2, 0, 1).contiguous().float() / 255.0
     return x
 
 
 # -----------------------------
-# Context feature extractor
+# Context feature extractor.
 # -----------------------------
 # Feature vector (float32) length = 7:
 #  [0] qr_area_ratio    : polygon area / image area (0..1)
@@ -43,7 +41,7 @@ def _to_chw_float(img_bgr: np.ndarray, size: int = 224) -> torch.Tensor:
 #  [3] blur_score       : normalized log(var(Laplacian)) (0..1-ish)
 #  [4] contrast         : gray std / 128 (0..~1)
 #  [5] bg_complexity    : edge density outside QR (0..1)
-#  [6] occlusion_ratio  : mid-tone ratio inside QR (0..1)  (proxy)
+#  [6] occlusion_ratio  : mid-tone ratio inside QR (0..1), proxy for occlusion/lighting
 _QR_DETECTOR = cv2.QRCodeDetector()
 
 
@@ -57,15 +55,12 @@ def _extract_qr_context(img_bgr: np.ndarray) -> np.ndarray:
     h, w = img_bgr.shape[:2]
     gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
 
-    # blur (variance of Laplacian) -> log scale then squash
     lap = cv2.Laplacian(gray, cv2.CV_64F)
     var_lap = float(lap.var())
     blur_score = _safe01(np.log1p(var_lap) / 10.0)  # heuristic normalization
 
-    # contrast
     contrast = _safe01(float(gray.std()) / 128.0)
 
-    # QR polygon detection (no decode needed)
     ok, pts = _QR_DETECTOR.detect(gray)
     area_ratio = 0.0
     cx = 0.0
@@ -75,32 +70,26 @@ def _extract_qr_context(img_bgr: np.ndarray) -> np.ndarray:
 
     if ok and pts is not None and len(pts) > 0:
         poly = pts[0].astype(np.float32)  # shape (4,2)
-        # area
         area = float(cv2.contourArea(poly))
         area_ratio = _safe01(area / float(max(1, w * h)))
-        # center
         cx = _safe01(float(poly[:, 0].mean()) / float(max(1, w)))
         cy = _safe01(float(poly[:, 1].mean()) / float(max(1, h)))
 
-        # masks: QR region + background region
         mask_qr = np.zeros((h, w), np.uint8)
         cv2.fillConvexPoly(mask_qr, poly.astype(np.int32), 255)
         mask_bg = cv2.bitwise_not(mask_qr)
 
-        # background complexity: edge density on bg only
         edges = cv2.Canny(gray, 80, 160)
         bg_edges = edges[mask_bg > 0]
         if bg_edges.size > 0:
             bg_complexity = _safe01(float((bg_edges > 0).mean()))
 
-        # occlusion proxy: mid-tone ratio within QR region (blur/lighting/occlusion increases mid-tones)
         roi = gray[mask_qr > 0]
         if roi.size > 0:
             mid = ((roi >= 50) & (roi <= 205)).mean()
             occl = _safe01(float(mid))
 
     else:
-        # if QR not detected, still compute bg_complexity on whole image (fallback)
         edges = cv2.Canny(gray, 80, 160)
         bg_complexity = _safe01(float((edges > 0).mean()))
         occl = _safe01(float(((gray >= 50) & (gray <= 205)).mean()))
@@ -109,7 +98,7 @@ def _extract_qr_context(img_bgr: np.ndarray) -> np.ndarray:
 
 
 # -----------------------------
-# Augmentation configs
+# Augmentation configs.
 # -----------------------------
 @dataclass
 class QRDatasetConfig:
@@ -118,7 +107,7 @@ class QRDatasetConfig:
     augment_strength: str = "default"  # light/default/strong
     use_context: bool = True
 
-    # NEW: optionally return payload string (for co-evolution decode constraints)
+    # Optionally return payload strings for co-evolution decode constraints.
     return_payload: bool = False
     payload_col: str = "url_norm"  # column name to return when return_payload=True
 
@@ -126,7 +115,7 @@ class QRDatasetConfig:
 def _cfg_from_strength(strength: str) -> AugmentConfig:
     cfg = AugmentConfig()
 
-    # On-the-fly background compositing defaults:
+    # On-the-fly background compositing defaults.
     # If assets/backgrounds exists and has images, train-time augmentation will
     # automatically create "QR on real background" samples without extra CLI flags.
     cfg.background_dir = "assets/backgrounds"
@@ -158,7 +147,7 @@ def _cfg_from_strength(strength: str) -> AugmentConfig:
 
 
 # -----------------------------
-# Datasets
+# Datasets.
 # -----------------------------
 class QRImageDataset(Dataset):
     """Dataset over manifest CSV that contains qr_path and label.
@@ -190,14 +179,14 @@ class QRImageDataset(Dataset):
         if (not self.has_label) and require_label:
             raise ValueError("manifest must include label")
         if not self.has_label:
-            self.df["label"] = 0  # inference/demo용 더미 라벨
+            self.df["label"] = 0  # Dummy label for inference/demo.
 
         self.cfg = cfg or QRDatasetConfig()
         self.rng = random.Random(seed)
         self.aug_cfg = _cfg_from_strength(self.cfg.augment_strength)
         self.labels = self.df["label"].astype(int).values
 
-        # payload column guard (no hard error to keep backward-compat)
+        # Payload column guard (no hard error to keep backward-compat).
         if self.cfg.return_payload and (self.cfg.payload_col not in self.df.columns):
             self.df[self.cfg.payload_col] = ""
 
@@ -258,21 +247,21 @@ class FusionDataset(Dataset):
         if (not self.has_label) and require_label:
             raise ValueError("CSV must include label")
         if not self.has_label:
-            self.df["label"] = 0  # inference/demo용 더미 라벨
+            self.df["label"] = 0  # Dummy label for inference/demo.
 
         if len(self.df) != url_vec.shape[0]:
             raise ValueError(f"url_vec rows must match df: {url_vec.shape[0]} vs {len(self.df)}")
 
         self.url_vec = url_vec.astype(np.float32)
         self.lex = batch_extract_url_features(self.df["url_norm"].astype(str).tolist()).astype(np.float32)
-        self.labels = self.df["label"].astype(int).values  # sampler용
+        self.labels = self.df["label"].astype(int).values  # Labels for sampling.
 
         self.cfg = cfg or QRDatasetConfig()
         self.aug_cfg = _cfg_from_strength(self.cfg.augment_strength)
         self.rng = random.Random(seed)
 
         if self.cfg.return_payload and (self.cfg.payload_col not in self.df.columns):
-            # keep compat: allow custom payload col, fallback to empty string
+            # Keep compat: allow custom payload col, fallback to empty string.
             self.df[self.cfg.payload_col] = ""
 
     def __len__(self) -> int:
