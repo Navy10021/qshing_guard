@@ -1,21 +1,21 @@
 # QShing Guard 🛡️
 **Quishing (QR Phishing) Detection Framework**  
-Real‑world augmentation ✦ Fusion detector ✦ Security‑game co‑evolution (Context Attacker ↔ Detector)
+Real‑world augmentation ✦ Multi‑modal fusion ✦ Security‑game co‑evolution (Context Attacker ↔ Detector)
 
 ![status](https://img.shields.io/badge/status-active-brightgreen)
 ![domain](https://img.shields.io/badge/domain-QR%20Security%20%2F%20Anti--Phishing-blue)
 ![training](https://img.shields.io/badge/training-security%20game%20coevolution-purple)
 
-> **Mission**: QR 코드를 악용한 신종 피싱(큐싱/Quishing)을 **탐지(WARN)·차단(BLOCK)** 하는 운영형 모델/파이프라인 구축  
-> **Core idea**: “스캔 가능한 QR(Decodability)” 제약 하에서 **현실 촬영 분포(Real‑world capture distribution)** + **적대적 Context 공격**에도 무너지지 않는 강건성(robustness) 확보
+> **Mission**: Build an operational pipeline that **detects (WARN) and blocks (BLOCK)** QR‑enabled phishing attacks (“quishing”).  
+> **Core idea**: Under **decodability constraints** (QR must remain scannable), train for robustness against both **real‑world capture distribution** and **adversarial context attacks**.
 
 ---
 
 ## TL;DR
-- **Real‑world Data Augmentation**: `QR + Background + Camera/Sharing Effects`로 **현장 촬영본 같은 분포**를 학습
-- **Fusion Detector (핵심)**: QR 이미지 + URL 문자열(TF‑IDF) + URL lexical + (선택) Context feature branch
-- **Security‑game Co‑evolution**: 공격자(Attacker)가 “가장 잘 속는” 공격을 만들고, 방어자(Detector)는 이를 흡수하며 강해지는 **순환 적대 학습 루프**
-- **운영 설계**: FPR 기반 `WARN/BLOCK` 임계값 + calibration + 시각화 리포트(ROC/PR/CM/Calibration/ECE)
+- **Real‑world Data Augmentation**: simulate “in‑the‑wild” QR captures with `QR + Background + Camera/Sharing Effects`
+- **Fusion Detector (key)**: QR image + URL text (TF‑IDF) + URL lexical features + optional context feature branch
+- **Security‑game Co‑evolution**: attacker generates what the detector fails on; the detector absorbs current + past attacks via replay
+- **Operationalization**: FPR‑based `WARN/BLOCK` thresholds + calibration + reports (ROC/PR/CM/Calibration/ECE)
 
 ---
 
@@ -35,56 +35,56 @@ Real‑world augmentation ✦ Fusion detector ✦ Security‑game co‑evolution
 ---
 
 ## 1) Why Quishing is Dangerous
-**Quishing(큐싱/퀴싱)** 은 QR 코드 스캔을 트리거로 사용자의 브라우저/앱으로 악성 URL을 전달하는 피싱 기법입니다.  
-“링크를 클릭했다”는 인지 없이 **스캔 1번으로 즉시 이동**하기 때문에, 탐지·차단 타이밍이 늦으면 피해로 직결됩니다.
+**Quishing** uses QR scanning as the trigger to deliver a malicious URL into a browser/app.  
+Because users often do not “see” a link before scanning, a single scan can lead directly to redirects, landing pages, and credential theft.
 
-### 위협 포인트
-- **사용자 인지 지연**: 링크 텍스트를 보기 전에 앱이 열리고 리다이렉트/랜딩이 진행될 수 있음
-- **전파 용이**: 전단/포스터/문서/영수증/결제화면 등 오프라인 채널을 통해 빠르게 확산
-- **탐지 우회 난이도 낮음**: 공격자는 “스캔 가능”을 유지한 채, 촬영 환경/배경/열화(blur, jpeg, occlusion)로 탐지기를 흔들 수 있음
+### Threat highlights
+- **Delayed user awareness**: QR scan can open apps/URLs immediately, before any human verification
+- **Easy propagation**: posters, documents, receipts, payment screens, and other offline channels
+- **Low-cost evasions**: attackers can keep the code scannable while perturbing capture conditions (blur, JPEG artifacts, occlusion, perspective)
 
-> QShing Guard는 “QR 내용만” 보는 모델이 아니라, **현실 촬영 분포 + 운영 지표 + 적대 학습**까지 포함한 운영형 설계를 목표로 합니다.
+> QShing Guard is not “QR content only.” It is an operational design that explicitly targets **real-world distribution shift + metrics + adversarial training**.
 
 ---
 
 ## 2) End-to-End Pipeline
-QShing Guard는 데이터 구축부터 운영형 평가/데모까지 **하나의 파이프라인**으로 제공합니다.
+QShing Guard provides an end‑to‑end pipeline from dataset construction to operational evaluation and demo.
 
 ### 2.1 Pipeline Diagram (Mermaid)
-> GitHub에서 자동 렌더링됩니다.
+> Automatically rendered on GitHub.
 
 ```mermaid
 flowchart TD
-  A[Raw DB\nKISA(phish URL)\nKakao(labeled)\nNormal URLs] --> B[Build Manifest\nnormalize/dedup/balance]
-  B --> C[Split\n(domain-level recommended)]
-  C --> D[Generate Clean QR\nURL → QR image]
-  D --> E[Attach QR Paths\ntrain/val/test_with_qr.csv]
-  E --> F[Real-world Augmentation\non-the-fly or offline\nQR+BG+Camera effects]
-  F --> G[Baselines\nURL / QR / Fusion]
-  G --> H[Security Game Co-evolution\nAttacker ↔ Detector\n(pool + replay + scaling)]
-  H --> I[Operational Eval\nWARN/BLOCK + calibration\nrobustness curve]
-  I --> J[Demo\n10~20 QRs\npanel visualization]
+  A["Raw DB<br/>KISA (phish URL)<br/>Kakao (labeled)<br/>Normal URLs"] --> B["Build Manifest<br/>normalize / dedup / balance"]
+  B --> C["Split<br/>(domain-level recommended)"]
+  C --> D["Generate Clean QR<br/>URL → QR image"]
+  D --> E["Attach QR Paths<br/>train/val/test_with_qr.csv"]
+  E --> F["Real-world Augmentation<br/>on-the-fly or offline<br/>QR + BG + camera effects"]
+  F --> G["Baselines<br/>URL / QR / Fusion"]
+  G --> H["Security Game Co-evolution<br/>Attacker ↔ Detector<br/>(pool + replay + scaling)"]
+  H --> I["Operational Eval<br/>WARN/BLOCK + calibration<br/>robustness curve"]
+  I --> J["Demo<br/>10–20 QRs<br/>panel visualization"]
 ```
 
-### 2.2 Code Map (핵심 파일)
-- `src/qr/augmentations.py` : 현실 촬영 증강 + QR+Background 합성
+### 2.2 Code Map (key modules)
+- `src/qr/augmentations.py` : real‑world augmentation + QR/background composition
 - `src/train/modeling_qr.py` : QR detector backbone
-- `src/train/modeling_fusion.py` : Fusion detector (gated/concat) + context feature branch
-- `src/train/train_coevolution.py` : Security‑game co‑evolution 루프(attacker pool, replay, difficulty scaling)
-- `src/eval/*` : 운영지표 평가 + 시각화(ROC/PR/CM/Calibration/ECE 등)
-- `src/app/*` : 데모 예측 + 패널 시각화
+- `src/train/modeling_fusion.py` : fusion detector (gated/concat) + optional context branch
+- `src/train/train_coevolution.py` : co‑evolution loop (attacker pool, replay, difficulty scaling)
+- `src/eval/*` : operational evaluation + visual reports (ROC/PR/CM/Calibration/ECE)
+- `src/app/*` : demo inference + panel visualization
 
 ---
 
 ## 3) Real-world Data Augmentation
-디지털로 생성한 “깨끗한 QR”만으로는 **현장 촬영본**에서 성능이 크게 흔들릴 수 있습니다.  
-QShing Guard는 **컨텍스트(배경) + 카메라/공유 열화**를 명시적으로 시뮬레이션합니다.
+Training on clean, synthetic QR images alone is not enough: performance often degrades on **in‑the‑wild captures**.  
+QShing Guard simulates context/background and camera/sharing artifacts explicitly.
 
-### 3.1 Context‑aware Background Composition
-구조: **QR + Background + Camera/Sharing Effect**  
-배경은 URL/라벨과 무관한 이미지로만 구성(데이터 누수/편향 방지).
+### 3.1 Context-aware Background Composition
+Composition: **QR + Background + Camera/Sharing Effect**  
+Backgrounds are label‑agnostic to avoid leakage/bias.
 
-권장 디렉터리:
+Recommended directory:
 ```text
 assets/
 └── backgrounds/
@@ -94,86 +94,85 @@ assets/
     └── screen/
 ```
 
-주요 옵션:
+Key options:
 - `--background_dir assets/backgrounds`
 - `--context_mode mix`
 - `--context_prob 0.75`
 - `--output_size 512`
 
-### 3.2 Camera/Sharing Effects (촬영·공유 환경)
-- perspective(사선 촬영), blur(초점 문제), brightness/contrast, jpeg artifact(메신저 공유), noise, occlusion(손/스티커/가림)
+### 3.2 Camera/Sharing Effects
+- perspective warp, blur, brightness/contrast, JPEG artifacts (messenger sharing), noise, occlusion (hands/stickers)
 
-### 3.3 Context Feature Branch (상황 특징, 선택)
-QR “내용 embedding”이 아니라, QR이 놓인 **상황(Context)** 을 수치화해 Fusion에 주입합니다.
+### 3.3 Context Feature Branch (optional)
+Not “content embedding,” but **scene/context metadata** used as structured features for fusion.
 
 | Feature | Meaning |
 |---|---|
-| `qr_area_ratio` | 전체 이미지 대비 QR 크기 |
-| `qr_x, qr_y` | QR 위치(정규화) |
-| `blur_score` | 촬영/인쇄 품질 proxy |
-| `contrast` | 인쇄 대비 |
-| `bg_complexity` | 배경 복잡도(edge density) |
-| `occlusion_ratio` | 가림/열화 proxy |
+| `qr_area_ratio` | QR size relative to image |
+| `qr_x, qr_y` | normalized QR position |
+| `blur_score` | capture/print quality proxy |
+| `contrast` | print contrast proxy |
+| `bg_complexity` | background complexity (edge density) |
+| `occlusion_ratio` | occlusion/decay proxy |
 
-> Fusion 모델에서 `--use_context`로 활성화합니다.
+Enable with `--use_context` in fusion training.
 
 ---
 
 ## 4) Fusion Model
-운영에서 가장 중요한 포인트는 **Fusion** 입니다.  
-QR 이미지 신호가 약할 때(URL/lexical/context가 보완)도 있고, 반대로 URL 문자열이 짧거나 난독화될 때(QR/컨텍스트가 보완)도 있습니다.
+In production, fusion matters: sometimes the QR visual signal is weak (URL/lexical/context helps), and sometimes the URL is short/obfuscated (QR/context helps).
 
 ### 4.1 Architecture Diagram (Mermaid)
 ```mermaid
 flowchart LR
-  Q[QR Image] --> QCNN[QR CNN Backbone]
-  QCNN --> QEmb[QR Embedding]
+  Q["QR Image"] --> QCNN["QR CNN Backbone"]
+  QCNN --> QEmb["QR Embedding"]
 
-  U[URL Norm] --> TFIDF[TF-IDF Vectorizer]
-  TFIDF --> UEmb[URL Embedding]
+  U["URL Norm"] --> TFIDF["TF-IDF Vectorizer"]
+  TFIDF --> UEmb["URL Embedding"]
 
-  L[URL Lexical] --> LVec[Lexical Feature Vector]
+  L["URL Lexical"] --> LVec["Lexical Feature Vector"]
 
-  C[Context Meta] --> CVec[Context Feature Vector]
+  C["Context Meta"] --> CVec["Context Feature Vector"]
 
-  QEmb --> F[Fusion Layer\n(gated or concat)]
+  QEmb --> F["Fusion Layer<br/>(gated or concat)"]
   UEmb --> F
   LVec --> F
   CVec --> F
 
-  F --> MLP[Classifier Head]
-  MLP --> P[Prob(phish)]
-  P --> D[Decision\nWARN/BLOCK]
+  F --> MLP["Classifier Head"]
+  MLP --> P["Prob(phish)"]
+  P --> D["Decision<br/>WARN/BLOCK"]
 ```
 
 ### 4.2 Fusion Modes
-- `gated` (**권장**): QR/URL/lex/context 기여도를 게이팅으로 동적 조절  
-- `concat`: 단순 결합(기준선)
+- `gated` (**recommended**): dynamically gates contributions from QR/URL/lex/context
+- `concat`: simple concatenation baseline
 
 ---
 
 ## 5) Security Game Co-evolution
-단순 GAN이 아니라, **보안 게임(Security Game)** 관점의 순환 적대 학습입니다.
+Not a generic GAN: this is a **security game** loop.
 
-- **Attacker (Context Attacker)**: 현재 Detector가 “가장 잘 속는” 컨텍스트 공격을 생성
-- **Detector (Defense)**: Clean + Current Attack + Past Attacks(replay)를 함께 학습하여 안정적 분류 유지
-- **Difficulty Scaling**: weak → realistic → optimal로 점진적 난이도 증가
+- **Attacker (Context Attacker)**: crafts context attacks that maximally confuse the current detector
+- **Detector (Defense)**: trains on clean + current attacks + replayed past attacks to prevent forgetting
+- **Difficulty Scaling**: weak → realistic → optimal
 
 ### 5.1 Co-evolution Diagram (Mermaid)
 ```mermaid
 flowchart TD
-  subgraph RedTeam[Attacker Pool (Population)]
-    G0[G0]:::att --> A1[adv samples]
-    G1[G1]:::att --> A1
-    G2[G2]:::att --> A1
+  subgraph RedTeam["Attacker Pool (Population)"]
+    G0["G0"]:::att --> A1["adv samples"]
+    G1["G1"]:::att --> A1
+    G2["G2"]:::att --> A1
   end
 
-  A1 --> Filt[Decode Constraints\n--decode_filter\n--payload_match]:::con
-  Filt --> Blue[Detector (QR-only or Fusion)]:::def
-  Blue --> Grad[Failure Signal / Gradients]:::sig
+  A1 --> Filt["Decode Constraints<br/>--decode_filter<br/>--payload_match"]:::con
+  Filt --> Blue["Detector<br/>(QR-only or Fusion)"]:::def
+  Blue --> Grad["Failure Signal / Gradients"]:::sig
   Grad --> RedTeam
 
-  Blue --> Replay[Replay Buffer\npast attacks]:::buf
+  Blue --> Replay["Replay Buffer<br/>past attacks"]:::buf
   Replay --> Blue
 
   classDef att fill:#ffefef,stroke:#ff4d4d,stroke-width:1px;
@@ -183,27 +182,27 @@ flowchart TD
   classDef buf fill:#eefcf3,stroke:#22aa66,stroke-width:1px;
 ```
 
-### 5.2 안정화 기법 (중요)
-- **Attacker Pool**: 공격자 1개가 아니라 N개를 유지 → detector는 공격 ensemble을 상대
-- **Replay Buffer**: 과거 공격 재사용 → forgetting/defense collapse 방지
-- **Decodability / Payload Constraint**
-  - `--decode_filter`: decode 성공 샘플만 학습
-  - `--payload_match`: decode payload == GT(`url_norm`) 일치까지 강제  
-    - 권장: 워밍업 이후에 활성화(초기 학습 수렴 안정화)
+### 5.2 Stabilization Techniques (important)
+- **Attacker Pool**: maintain multiple attackers → defend against an ensemble
+- **Replay Buffer**: reuse past attacks → mitigate catastrophic forgetting
+- **Decodability / Payload Constraints**
+  - `--decode_filter`: train only on samples that decode successfully
+  - `--payload_match`: enforce decoded payload == ground truth (`url_norm`)
+    - recommended after warm‑up for stable convergence
 
 ---
 
 ## 6) Quickstart
 ### Requirements
-- Python 3.10+ 권장
-- (선택) CUDA 환경에서 학습 가속 가능
+- Python 3.10+ recommended
+- (Optional) CUDA for faster training
 
 ### Install
 ```bash
 pip install -r requirements.txt
 ```
 
-### STEP 1) Manifest 구축 (Fast Test)
+### STEP 1) Build manifest (fast smoke test)
 ```bash
 python -m src.data.build_manifest \
   --kisa_csv data/raw/kisa_db.csv \
@@ -217,7 +216,7 @@ python -m src.data.build_manifest \
   --seed 42
 ```
 
-### STEP 2) Split 생성 (Leakage 방지)
+### STEP 2) Create splits (reduce leakage)
 ```bash
 python -m src.data.split_manifest \
   --manifest_csv data/processed/manifest.csv \
@@ -225,7 +224,7 @@ python -m src.data.split_manifest \
   --seed 42
 ```
 
-### STEP 3) QR 생성 (URL → QR)
+### STEP 3) Generate QRs (URL → QR)
 ```bash
 python -m src.qr.generate_qr \
   --manifest_path data/processed/manifest.csv \
@@ -236,7 +235,7 @@ python -m src.qr.generate_qr \
   --border 4
 ```
 
-### STEP 4) QR 포함 split 생성
+### STEP 4) Attach QR paths to split CSVs
 ```bash
 python -m src.data.attach_qr_paths \
   --manifest_with_qr data/processed/manifest_with_qr.csv \
@@ -244,7 +243,7 @@ python -m src.data.attach_qr_paths \
   --out_dir data/processed
 ```
 
-### STEP 5) Offline Real-world Aug dataset 생성 (선택)
+### STEP 5) (Optional) Build offline real‑world augmented dataset
 ```bash
 python -m src.qr.augment_qr \
   --input_dir data/qr_images \
@@ -263,7 +262,7 @@ python -m src.qr.augment_qr \
 ---
 
 ## 7) Training & Evaluation
-### Fusion Baseline (권장)
+### Fusion baseline (recommended)
 ```bash
 python -m src.train.train_fusion \
   --train_csv data/processed/train_with_qr.csv \
@@ -278,8 +277,8 @@ python -m src.train.train_fusion \
   --block_fpr 0.001
 ```
 
-### Co-evolution (권장 2단계)
-**(A) 워밍업: `decode_filter`만**
+### Co-evolution (recommended, 2-stage)
+**(A) Warm-up: `decode_filter` only**
 ```bash
 python -m src.train.train_coevolution \
   --train_csv data/processed/train_with_qr.csv \
@@ -302,7 +301,7 @@ python -m src.train.train_coevolution \
   --decode_min_keep 4
 ```
 
-**(B) 본게임: `payload_match`까지 강제**
+**(B) Main game: enforce `payload_match`**
 ```bash
 python -m src.train.train_coevolution \
   --train_csv data/processed/train_with_qr.csv \
@@ -327,7 +326,7 @@ python -m src.train.train_coevolution \
   --decode_min_keep 4
 ```
 
-### Operational Evaluation (WARN/BLOCK) + Visualization
+### Operational evaluation (WARN/BLOCK) + visualization
 ```bash
 python -m src.eval.eval_fusion_operational \
   --val_csv data/processed/val_with_qr.csv \
@@ -341,7 +340,7 @@ python -m src.eval.eval_fusion_operational \
 
 ---
 
-## 8) Demo (10~20개 입력 → 판정/시각화)
+## 8) Demo (10–20 inputs → decisions + panels)
 ```bash
 python -m src.app.demo_qr_predict \
   --input_dir samples/qr_demo \
@@ -354,26 +353,26 @@ python -m src.app.demo_qr_predict \
 ---
 
 ## 9) Expected Impact & Roadmap
-### 기대효과
-- **신종 큐싱 위협 대응**: QR 기반 피싱을 운영형 지표(WARN/BLOCK)로 즉시 조치 가능
-- **실전 강건성 향상**: 촬영/공유/인쇄 환경에서도 성능 저하 최소화
-- **운영 비용 절감**: FPR 기반 임계값 + calibration으로 오탐 억제
-- **지속적 방어력 향상**: co‑evolution으로 새로운 우회 패턴에 반복 적응
+### Expected impact
+- **Faster response to emerging quishing campaigns** with operational WARN/BLOCK actions
+- **Higher robustness** under capture/printing/sharing artifacts
+- **Lower ops burden** via FPR‑controlled thresholds + calibration
+- **Continuous hardening** via co‑evolution against new evasions
 
-### 향후 확장성
-- **Background Library 확장**: 업종/상황별 배경 추가(은행/배송/관공서 등)
-- **Payload‑preserving 제약 강화**: 부분 스캔/멀티 QR/리다이렉트 체인까지 확장
-- **Multi‑channel 입력**: 메시지 본문/발신자/메타데이터 결합(멀티모달)
-- **MLOps 연계**: 드리프트 감지 + robustness curve 모니터링 대시보드
+### Roadmap
+- Expand background library by domain (banking/delivery/public sector, etc.)
+- Strengthen payload‑preserving constraints (partial scans, multi‑QR scenes, redirect chains)
+- Multi‑channel inputs (message body/sender/metadata) for richer multi‑modal defense
+- MLOps integration: drift detection + robustness monitoring dashboard
 
 ---
 
 ## 10) Reproducibility Notes
-- **Split 권장**: URL 단위가 아니라 **도메인 단위(domain‑level)** split을 권장합니다(데이터 누수 완화).
-- **임계값(WARN/BLOCK)**: 운영 환경의 허용 FPR을 기준으로 `--warn_fpr`, `--block_fpr`를 설정하고, 가능하면 validation set에서 temperature scaling을 적용하세요(`--fit_temperature_on_val`).
-- **Decode 제약**: co‑evolution 학습 시 `decode_filter` → `payload_match` 순으로 단계적으로 강화하면 안정적입니다.
+- **Splits**: prefer **domain‑level** splits over URL‑level to reduce leakage.
+- **Thresholds (WARN/BLOCK)**: set `--warn_fpr` and `--block_fpr` to match operational tolerance; use temperature scaling on validation when possible (`--fit_temperature_on_val`).
+- **Decode constraints**: for co‑evolution, strengthen constraints gradually: `decode_filter` → `payload_match`.
 
 ---
 
 ## Disclaimer ⚠️
-본 저장소는 **QR 기반 피싱 방어/연구 목적**입니다. 실제 공격/악용은 금지되며, 데이터/모델 사용 시 관련 법규 및 윤리 기준을 준수하세요.
+This repository is for **defensive research and protection** against QR‑phishing. Any offensive use is prohibited. Follow all applicable laws, policies, and ethical guidelines when using datasets and models.

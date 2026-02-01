@@ -55,15 +55,15 @@ QShing Guard provides an end‑to‑end pipeline from dataset construction to op
 
 ```mermaid
 flowchart TD
-  A[Raw DB\nKISA(phish URL)\nKakao(labeled)\nNormal URLs] --> B[Build Manifest\nnormalize/dedup/balance]
-  B --> C[Split\n(domain-level recommended)]
-  C --> D[Generate Clean QR\nURL → QR image]
-  D --> E[Attach QR Paths\ntrain/val/test_with_qr.csv]
-  E --> F[Real-world Augmentation\non-the-fly or offline\nQR+BG+Camera effects]
-  F --> G[Baselines\nURL / QR / Fusion]
-  G --> H[Security Game Co-evolution\nAttacker ↔ Detector\n(pool + replay + scaling)]
-  H --> I[Operational Eval\nWARN/BLOCK + calibration\nrobustness curve]
-  I --> J[Demo\n10~20 QRs\npanel visualization]
+  A["Raw DB<br/>KISA (phish URL)<br/>Kakao (labeled)<br/>Normal URLs"] --> B["Build Manifest<br/>normalize / dedup / balance"]
+  B --> C["Split<br/>(domain-level recommended)"]
+  C --> D["Generate Clean QR<br/>URL → QR image"]
+  D --> E["Attach QR Paths<br/>train/val/test_with_qr.csv"]
+  E --> F["Real-world Augmentation<br/>on-the-fly or offline<br/>QR + BG + camera effects"]
+  F --> G["Baselines<br/>URL / QR / Fusion"]
+  G --> H["Security Game Co-evolution<br/>Attacker ↔ Detector<br/>(pool + replay + scaling)"]
+  H --> I["Operational Eval<br/>WARN/BLOCK + calibration<br/>robustness curve"]
+  I --> J["Demo<br/>10–20 QRs<br/>panel visualization"]
 ```
 
 ### 2.2 Code Map (key modules)
@@ -125,24 +125,24 @@ In production, fusion matters: sometimes the QR visual signal is weak (URL/lexic
 ### 4.1 Architecture Diagram (Mermaid)
 ```mermaid
 flowchart LR
-  Q[QR Image] --> QCNN[QR CNN Backbone]
-  QCNN --> QEmb[QR Embedding]
+  Q["QR Image"] --> QCNN["QR CNN Backbone"]
+  QCNN --> QEmb["QR Embedding"]
 
-  U[URL Norm] --> TFIDF[TF-IDF Vectorizer]
-  TFIDF --> UEmb[URL Embedding]
+  U["URL Norm"] --> TFIDF["TF-IDF Vectorizer"]
+  TFIDF --> UEmb["URL Embedding"]
 
-  L[URL Lexical] --> LVec[Lexical Feature Vector]
+  L["URL Lexical"] --> LVec["Lexical Feature Vector"]
 
-  C[Context Meta] --> CVec[Context Feature Vector]
+  C["Context Meta"] --> CVec["Context Feature Vector"]
 
-  QEmb --> F[Fusion Layer\n(gated or concat)]
+  QEmb --> F["Fusion Layer<br/>(gated or concat)"]
   UEmb --> F
   LVec --> F
   CVec --> F
 
-  F --> MLP[Classifier Head]
-  MLP --> P[Prob(phish)]
-  P --> D[Decision\nWARN/BLOCK]
+  F --> MLP["Classifier Head"]
+  MLP --> P["Prob(phish)"]
+  P --> D["Decision<br/>WARN/BLOCK"]
 ```
 
 ### 4.2 Fusion Modes
@@ -161,18 +161,18 @@ Not a generic GAN: this is a **security game** loop.
 ### 5.1 Co-evolution Diagram (Mermaid)
 ```mermaid
 flowchart TD
-  subgraph RedTeam[Attacker Pool (Population)]
-    G0[G0]:::att --> A1[adv samples]
-    G1[G1]:::att --> A1
-    G2[G2]:::att --> A1
+  subgraph RedTeam["Attacker Pool (Population)"]
+    G0["G0"]:::att --> A1["adv samples"]
+    G1["G1"]:::att --> A1
+    G2["G2"]:::att --> A1
   end
 
-  A1 --> Filt[Decode Constraints\n--decode_filter\n--payload_match]:::con
-  Filt --> Blue[Detector (QR-only or Fusion)]:::def
-  Blue --> Grad[Failure Signal / Gradients]:::sig
+  A1 --> Filt["Decode Constraints<br/>--decode_filter<br/>--payload_match"]:::con
+  Filt --> Blue["Detector<br/>(QR-only or Fusion)"]:::def
+  Blue --> Grad["Failure Signal / Gradients"]:::sig
   Grad --> RedTeam
 
-  Blue --> Replay[Replay Buffer\npast attacks]:::buf
+  Blue --> Replay["Replay Buffer<br/>past attacks"]:::buf
   Replay --> Blue
 
   classDef att fill:#ffefef,stroke:#ff4d4d,stroke-width:1px;
