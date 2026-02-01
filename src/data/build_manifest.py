@@ -44,7 +44,7 @@ def _progress_map(series: pd.Series, fn, desc: str) -> pd.Series:
 
 
 def _detect_kisa_url_col(df: pd.DataFrame) -> str:
-    # Expected columns often include localized headers like "날짜", "홈페이지주소".
+    # Expected columns often include localized headers (e.g., date, homepage).
     for c in df.columns:
         cl = str(c).lower()
         if "홈페이지" in str(c) or cl in ("url", "homepage", "site") or "url" in cl:
