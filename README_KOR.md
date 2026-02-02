@@ -226,7 +226,7 @@ python -m src.qr.generate_qr   --manifest_path data/processed/manifest.csv   --o
 python -m src.data.attach_qr_paths   --manifest_with_qr data/processed/manifest_with_qr.csv   --splits_dir data/processed   --out_dir data/processed
 ```
 
-### STEP 5) Offline Real-world Aug dataset 생성 (선택)
+### STEP 5) Offline Real-world Aug dataset 생성
 ```bash
 python -m src.qr.augment_qr   --input_dir data/qr_images   --out_dir data/qr_images_aug   --n_per_image 2   --strength strong   --background_dir assets/backgrounds   --context_mode mix   --context_prob 0.75   --output_size 512   --decode_filter   --save_meta_csv data/processed/qr_aug_meta.csv   --seed 42
 ```
@@ -247,7 +247,7 @@ python -m src.train.train_coevolution   --train_csv data/processed/train_with_qr
 
 **(B) 본게임: `payload_match`까지 강제**
 ```bash
-python -m src.train.train_coevolution   --train_csv data/processed/train_with_qr.csv   --val_csv data/processed/val_with_qr.csv   --out_dir artifacts/models/coevo_fusion_payload   --detector_mode fusion   --fusion_mode gated   --use_context   --background_dir assets/backgrounds   --rounds 15   --attacker_pool 3   --k_attack 5   --k_defense 100   --batch_size 64   --image_size 224   --balance_sampler   --decode_filter   --payload_match   --payload_col url_norm
+python -m src.train.train_coevolution   --train_csv data/processed/train_with_qr.csv   --val_csv data/processed/val_with_qr.csv   --out_dir artifacts/models/coevo_fusion_payload   --detector_mode fusion   --fusion_mode gated   --use_context   --background_dir assets/backgrounds   --rounds 10   --attacker_pool 3   --k_attack 10   --k_defense 50   --batch_size 64   --image_size 224   --balance_sampler   --decode_filter   --payload_match   --payload_col url_norm
 ```
 
 ### Operational Evaluation (WARN/BLOCK) + Visualization
