@@ -103,7 +103,7 @@ Key options:
 ### 3.2 Camera/Sharing Effects
 - perspective warp, blur, brightness/contrast, JPEG artifacts (messenger sharing), noise, occlusion (hands/stickers)
 
-### 3.3 Context Feature Branch (optional)
+### 3.3 Context Feature Branch
 Not “content embedding,” but **scene/context metadata** used as structured features for fusion.
 
 | Feature | Meaning |
@@ -120,7 +120,7 @@ Enable with `--use_context` in fusion training.
 ---
 
 ## 4) Fusion Model
-In production, fusion matters: sometimes the QR visual signal is weak (URL/lexical/context helps), and sometimes the URL is short/obfuscated (QR/context helps).
+In production, fusion is critical: sometimes the QR visual signal is weak, in which case URL, lexical, and contextual features compensate; in other cases, the URL is short or obfuscated, and QR visual cues and contextual signals provide the necessary evidence. By design, each modality offsets the failure modes of the others, enabling robust detection under real-world noise and adversarial conditions.
 
 ### 4.1 Architecture Diagram (Mermaid)
 ```mermaid
