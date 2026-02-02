@@ -39,9 +39,9 @@ Real‑world 증강 ✦ Fusion detector ✦ Security‑game co‑evolution (Cont
 “링크를 클릭했다”는 인지 없이 **스캔 1번으로 즉시 이동**하기 때문에, 탐지·차단 타이밍이 늦으면 피해로 직결됩니다.
 
 ### 위협 포인트
-- **사용자 인지 지연**: 링크 텍스트를 보기 전에 앱이 열리고 리다이렉트/랜딩이 진행될 수 있음
+- **사용자 인지 지연**: 링크 텍스트를 보기 전에 앱이 열리고 리다이렉트/랜딩이 진행될 가능성 농후
 - **전파 용이**: 전단/포스터/문서/영수증/결제 화면 등 오프라인 채널을 통해 빠르게 확산
-- **탐지 우회 비용이 낮음**: 공격자는 “스캔 가능”을 유지한 채, 촬영 환경/배경/열화(blur, jpeg, occlusion, perspective)로 탐지기를 흔들 수 있음
+- **탐지 우회 비용이 낮음**: 공격자는 “스캔 가능”을 유지한 채, 촬영 환경/배경/열화(blur, jpeg, occlusion, perspective)로 탐지기를 흔들 가능성 다분
 
 > QShing Guard는 “QR 내용만” 보는 모델이 아니라, **현실 촬영 분포 + 운영 지표 + 적대 학습**까지 포함한 운영형 설계를 목표로 합니다.
 
@@ -103,8 +103,8 @@ assets/
 ### 3.2 Camera/Sharing Effects (촬영·공유 환경)
 - perspective(사선 촬영), blur(초점 문제), brightness/contrast, JPEG artifact(메신저 공유), noise, occlusion(손/스티커/가림)
 
-### 3.3 Context Feature Branch (상황 특징, 선택)
-QR “내용 embedding”이 아니라, QR이 놓인 **상황(Context)** 을 수치화해 Fusion에 주입합니다.
+### 3.3 Context Feature Branch (상황 특징)
+QR “이미지 embedding”이 아니라, QR이 놓인 **상황들(Context)** 을 수치화해 Fusion에 주입합니다.
 
 | Feature | 의미 |
 |---|---|
@@ -120,8 +120,8 @@ QR “내용 embedding”이 아니라, QR이 놓인 **상황(Context)** 을 수
 ---
 
 ## 4) Fusion Model
-운영에서 가장 중요한 포인트는 **Fusion** 입니다.  
-QR 이미지 신호가 약할 때(URL/lexical/context가 보완)도 있고, 반대로 URL 문자열이 짧거나 난독화될 때(QR/컨텍스트가 보완)도 있습니다.
+운영에서 가장 중요한 포인트는 Fusion 입니다.
+QR 이미지 신호가 약할 때는 URL·lexical·context 정보가 이를 보완하고, 반대로 URL 문자열이 짧거나 난독화된 경우에는 QR 이미지 및 컨텍스트 정보가 판단력을 보강합니다. 즉, 단일 신호에 의존하지 않고 각 모달리티가 상호보완적으로 작동하는 다중 증거 기반 탐지 구조가 운영 안정성과 탐지 신뢰도를 동시에 확보하는 핵심입니다.
 
 ### 4.1 Architecture Diagram (Mermaid)
 ```mermaid
