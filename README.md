@@ -293,8 +293,8 @@ python -m src.train.train_coevolution \
   --background_dir assets/backgrounds \
   --rounds 3 \
   --attacker_pool 3 \
-  --k_attack 5 \
-  --k_defense 100 \
+  --k_attack 10 \
+  --k_defense 50 \
   --batch_size 64 \
   --image_size 224 \
   --balance_sampler \
@@ -314,10 +314,10 @@ python -m src.train.train_coevolution \
   --fusion_mode gated \
   --use_context \
   --background_dir assets/backgrounds \
-  --rounds 15 \
+  --rounds 10 \
   --attacker_pool 3 \
-  --k_attack 5 \
-  --k_defense 100 \
+  --k_attack 10 \
+  --k_defense 50 \
   --batch_size 64 \
   --image_size 224 \
   --balance_sampler \
