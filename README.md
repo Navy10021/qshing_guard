@@ -1,6 +1,7 @@
 # QShing Guard 🛡️
 **Quishing (QR Phishing) Detection Framework**  
 *Developed by Hynix-Brain Team*
+
 Real‑world augmentation ✦ Multi‑modal fusion ✦ Security‑game co‑evolution (Context Attacker ↔ Detector)
 
 ![status](https://img.shields.io/badge/status-active-brightgreen)
