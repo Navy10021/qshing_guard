@@ -2,7 +2,7 @@
 **Quishing (QR Phishing) Detection Framework**  
 *Developed by Hynix-Brain Team*
 
-Real‑world augmentation ✦ Multi‑modal fusion ✦ Security‑game co‑evolution (Context Attacker ↔ Detector)
+✦ Real‑world augmentation ✦ Multi‑modal fusion ✦ Security‑game co‑evolution (Context Attacker ↔ Detector)
 
 ![status](https://img.shields.io/badge/status-active-brightgreen)
 ![domain](https://img.shields.io/badge/domain-QR%20Security%20%2F%20Anti--Phishing-blue)
